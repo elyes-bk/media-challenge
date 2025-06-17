@@ -1,26 +1,23 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useState } from 'react'
+import AdminTabs from '../../components/AdminTabs'
+import UserTable from '../../components/UserTable'
+import EventTable from '../../components/EventTable'
+import CategoryTable from '../../components/CategoryTable'
 
-export default function adminPage(){
+export default function AdminPage() {
+  const [activeTab, setActiveTab] = useState('users')
 
-    const [user, setUser] = useState(null);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(()=>{
-        const verifyAdmin = async()=>{
-            
-        }
-    })
-
-    return(
-        <div style={{ padding: '2rem' }}>
-            <h1>Page Admin</h1>
-            <p>Bienvenue, !</p>
-
-            <p>Formulaire d’upload à venir...</p>
-        </div>  
-    )
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <h1 className="text-4xl font-extrabold text-center mb-8 text-gray-900">Admin Panel</h1>
+      <AdminTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="mt-8">
+        {activeTab === 'users' && <UserTable />}
+        {activeTab === 'events' && <EventTable />}
+        {activeTab === 'categories' && <CategoryTable />}
+      </div>
+    </div>
+  )
 }
