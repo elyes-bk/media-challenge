@@ -44,10 +44,11 @@ export default function UserTable() {
     }
 
     const insertResult = await supabase.from('users').insert({
-        id: data.user.id,
-        surnom,
-        email,
-        role
+      id: data.user.id,
+      surnom: form.surnom,
+      email: form.email,
+      role: form.role,
+      theme: form.theme
     });
 
     setMessage("Utilisateur ajouté ! (Vérifie l'email pour confirmation)")
@@ -57,10 +58,23 @@ export default function UserTable() {
   }
 
   async function handleDelete(id) {
-    await supabase.from('users').delete().eq('id', id)
+    const res = await fetch('/api/delete-user', {
+      method: 'POST',
+      body: JSON.stringify({ id }),
+      headers: { 'Content-Type': 'application/json' }
+    })
+
+    const result = await res.json()
+
+    if (!res.ok) {
+      setMessage("Erreur lors de la suppression : " + result.error)
+      return
+    }
+
     setShowModal(false)
     fetchUsers()
   }
+
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">

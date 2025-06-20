@@ -4,11 +4,9 @@ import Nav from '../components/Nav';
 
 export default function Home({children}) {
   return (
-    <html lang="fr">
-      <body>
+      <div>
         <Nav />
         <main>{children}</main>
-      </body>
-    </html>
+      </div>
   );
 }
