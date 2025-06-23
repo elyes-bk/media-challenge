@@ -1,0 +1,22 @@
+{
+  "name": "Voix Publiques",
+
+  "short_name": "Voix Publiques",
+
+  "start_url": "/",
+
+  "display": "standalone",
+
+  "background_color": "#ffffff",
+
+  "theme_color": "#0070f3",
+
+  "icons": [
+    {
+      "src": "/logo-vp.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
