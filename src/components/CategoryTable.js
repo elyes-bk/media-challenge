@@ -65,14 +65,14 @@ export default function CategoryTable() {
           value={form.nom}
           onChange={e => setForm(f => ({ ...f, nom: e.target.value }))}
           required
-          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
         />
         <input
           placeholder="Description"
           value={form.description}
           onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
           required
-          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-600 text-gray-900"
         />
         <button
           type="submit"
