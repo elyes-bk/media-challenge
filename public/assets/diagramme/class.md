@@ -1,6 +1,6 @@
 ```mermaid
 --- 
-title: Diagramme de classe - Application Simplifiée 
+title: Diagramme de classe 
 ---
 
 classDiagram
@@ -11,7 +11,7 @@ classDiagram
         +email: String
         +motDePasse: String
         +isAdmin: bool
-        +sInscrire()
+        +sInscrire()--
         +seConnecter()
         +modifierProfil()
         +changerTheme()
