@@ -1,14 +1,17 @@
 'use client'
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabaseClient'
-import InteractiveMap from '@/components/InteractiveMap'
+
+// Import dynamique de la carte, ssr désactivé
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), { ssr: false })
 
 export default function EventsPage() {
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
   const [eventCategories, setEventCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [focusedEvent, setFocusedEvent] = useState(null) // <--- Ajout
+  const [focusedEvent, setFocusedEvent] = useState(null)
 
   useEffect(() => {
     fetchAll()

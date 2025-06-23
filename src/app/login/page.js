@@ -62,7 +62,7 @@ export default function Login() {
         borderRadius: 8,
         background: '#fff'
         }}>
-        <h2 style={{textAlign: 'center'}}>Connexion</h2>
+        <h2 style={{textAlign: 'center', color: 'black'}}>Connexion</h2>
         <form onSubmit={handleLogin}>
             <div style={{marginBottom: 12}}>
             <input
