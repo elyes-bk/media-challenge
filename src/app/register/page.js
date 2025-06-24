@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import Nav from '../../components/Nav';
 
 export default function Register() {
   const [email, setEmail] = useState('');
@@ -59,7 +58,6 @@ export default function Register() {
 
   return (
     <div>
-      <Nav />
       <div style={{
         maxWidth: 320,
         margin: '100px auto',

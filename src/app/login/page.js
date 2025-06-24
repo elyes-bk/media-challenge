@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import Nav from '../../components/Nav';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -53,7 +52,6 @@ export default function Login() {
 
   return (
     <div>
-        <Nav />
         <div style={{
         maxWidth: 320,
         margin: '100px auto',
