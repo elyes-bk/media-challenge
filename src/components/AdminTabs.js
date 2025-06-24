@@ -3,6 +3,8 @@ export default function AdminTabs({ activeTab, setActiveTab }) {
     { key: 'users', label: 'Utilisateurs' },
     { key: 'events', label: 'Événements' },
     { key: 'categories', label: 'Catégories' },
+    { key: 'videos', label: 'Vidéos' },
+
   ]
   return (
     <div className="flex justify-center space-x-6 border-b border-gray-300">
