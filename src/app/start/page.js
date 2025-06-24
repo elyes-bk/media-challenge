@@ -29,8 +29,6 @@ export default function RegisterPage() {
     router.push('/login')
   }
 
-
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5ecdc] px-4 py-8">
       {/* Logo */}
