@@ -3,7 +3,7 @@
 
   "short_name": "Voix Publiques",
 
-  "start_url": "/",
+  "start_url": "/start",
 
   "display": "standalone",
 

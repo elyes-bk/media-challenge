@@ -2,9 +2,8 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabaseClient'
-
-// Import dynamique de la carte, ssr désactivé
-const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), { ssr: false })
+import InteractiveMap from '@/components/InteractiveMap'
+import { filterEventsByCategory } from '@/utils/filters' // <-- Ajout
 
 export default function EventsPage() {
   const [events, setEvents] = useState([])
@@ -26,18 +25,13 @@ export default function EventsPage() {
     setEventCategories(eventCategoriesData || [])
   }
 
-  const filteredEvents = selectedCategory === 'all'
-    ? events
-    : events.filter(ev =>
-        eventCategories.some(ec =>
-          ec.event_id === ev.id && ec.category_id === selectedCategory
-        )
-      )
+  // Remplacer la logique de filtrage par l'appel à la fonction utilitaire
+  const filteredEvents = filterEventsByCategory(events, eventCategories, selectedCategory);
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
-      <h1 className="text-3xl font-bold mb-6 text-white-900">Événements</h1>
+    <div className="max-w-5xl mx-auto">
       {/* Select de catégorie */}
+      {/*
       <div className="mb-6">
         <label htmlFor="category-select" className="mr-2 font-semibold">Filtrer par catégorie :</label>
         <select
@@ -51,26 +45,12 @@ export default function EventsPage() {
             <option key={cat.id} value={cat.id}>{cat.nom}</option>
           ))}
         </select>
-      </div>
+      </div>*/}
       <InteractiveMap
         events={filteredEvents}
-        proximityRadius={100}
+        proximityRadius={200}
         focusedEvent={focusedEvent}
       />
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Liste des événements</h2>
-        <ul>
-          {filteredEvents.map(ev => (
-            <li
-              key={ev.id}
-              className="mb-2 cursor-pointer hover:underline"
-              onClick={() => setFocusedEvent(ev)}
-            >
-              <span className="font-bold">{ev.titre}</span> — {ev.description}
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   )
 }

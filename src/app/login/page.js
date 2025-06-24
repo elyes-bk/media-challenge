@@ -1,138 +1,153 @@
-"use client";
-import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabaseClient';
-import Nav from '../../components/Nav';
+'use client'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
+import { supabase } from '../../lib/supabaseClient'
+import { useRouter } from 'next/navigation'
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
+  const router = useRouter()
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession()
       if (session) {
-        setIsConnected(true);
-        console.log("✅ Utilisateur connecté :", session.user.email);
+        setIsConnected(true)
+        router.replace('/')  // pour rediriger si déjà connecté
+ 
       } else {
-        setIsConnected(false);
-        console.log("🚫 Aucun utilisateur connecté");
+        setIsConnected(false)
       }
-    };      
-    checkSession();
-  });
+    }
+    checkSession()
+  }, [])
 
+const handleLogin = async (e) => {
+  e.preventDefault()
+  setLoading(true)
+  setError('')
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
+  setLoading(false)
+  if (error) {
+    setError(error.message)
+  } else {
+    setIsConnected(true)
+    router.replace('/') // Redirige UNIQUEMENT si la connexion a réussi
+  }
+}
 
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) setError(error.message);
-    setLoading(false);
-  };
 
   const handleLogout = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error("Erreur déconnexion :", error.message);
-  } else {
-    console.log("✅ Déconnecté avec succès");
-    setIsConnected(false); // Met à jour ton état local
-    setEmail('');
-    setPassword('');
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setError("Erreur déconnexion : " + error.message)
+    } else {
+      setIsConnected(false)
+      setEmail('')
+      setPassword('')
+    }
   }
-};
-
 
   return (
-    <div>
-        <Nav />
-        <div style={{
-        maxWidth: 320,
-        margin: '100px auto',
-        padding: 24,
-        border: '1px solid #ddd',
-        borderRadius: 8,
-        background: '#fff'
-        }}>
-        <h2 style={{textAlign: 'center', color: 'black'}}>Connexion</h2>
-        <form onSubmit={handleLogin}>
-            <div style={{marginBottom: 12}}>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                required
-                onChange={e => setEmail(e.target.value)}
-                style={{
-                width: '100%',
-                padding: 8,
-                border: '1px solid #bbb',
-                borderRadius: 4
-                }}
-            />
-            </div>
-            <div style={{marginBottom: 12}}>
-            <input
-                type="password"
-                placeholder="Mot de passe"
-                value={password}
-                required
-                onChange={e => setPassword(e.target.value)}
-                style={{
-                width: '100%',
-                padding: 8,
-                border: '1px solid #bbb',
-                borderRadius: 4
-                }}
-            />
-            </div>
-            {error && (
-            <div style={{color: 'red', marginBottom: 12, fontSize: 14}}>
-                {error}
-            </div>
-            )}
-            <button
-            type="submit"
-            disabled={loading}
-            style={{
-                width: '100%',
-                padding: 10,
-                background: '#222',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 4,
-                cursor: 'pointer'
-            }}
-            >
-            {loading ? 'Connexion...' : 'Se connecter'}
-              </button>
-              {isConnected && (
-              <button
-                onClick={handleLogout}
-                style={{
-                  marginTop: 20,
-                  width: '100%',
-                  padding: 10,
-                  background: '#d33',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 4,
-                  cursor: 'pointer'
-                }}
-              >
-                Se déconnecter
-              </button>
-            )};
-        </form>
+    <div className="min-h-screen flex flex-col items-center bg-[#f5ecdc] px-4 py-6 relative">
+      {/* Header icons */}
+      <div className="absolute top-4 left-4">
+        <button
+          aria-label="Retour"
+          onClick={() => router.back()}
+          className="text-[#23221f] text-2xl"
+        >
+          ←
+        </button>
+      </div>
+      <div className="absolute top-4 right-4">
+        <button aria-label="Mode clair/sombre" className="text-[#23221f] text-xl">
+          ☀️
+        </button>
+      </div>
+
+      {/* Logo */}
+      <div className="mt-8 mb-6">
+        <Image
+          src="/logo-vp.svg"
+          alt="Voix Publiques"
+          width={80}
+          height={40}
+          className="mx-auto"
+        />
+      </div>
+
+      {/* Titre */}
+      <h1 className="text-2xl font-bold text-center mb-6 text-[#23221f]">
+        Connexion à votre compte
+      </h1>
+
+      {/* Formulaire */}
+      <form
+        onSubmit={handleLogin}
+        className="w-full max-w-xs flex flex-col gap-4"
+        autoComplete="off"
+      >
+        <div className="flex flex-col gap-1">
+          <label htmlFor="email" className="text-sm font-medium text-[#23221f]">
+            Mail
+          </label>
+          <input
+            id="email"
+            type="email"
+            placeholder="votre.email@email.com"
+            value={email}
+            required
+            onChange={e => setEmail(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-[#23221f] placeholder-[#bdbdbd] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
+          />
         </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="password" className="text-sm font-medium text-[#23221f]">
+            Mot de passe
+          </label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Mot de passe"
+            value={password}
+            required
+            onChange={e => setPassword(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-[#23221f] placeholder-[#bdbdbd] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
+          />
+        </div>
+        {error && (
+          <div className="text-red-600 text-sm">{error}</div>
+        )}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full mt-2 bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+        >
+          {loading ? 'Connexion...' : 'Se connecter'}
+        </button>
+        {isConnected && (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full mt-2 bg-[#d33] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#b22]"
+          >
+            Se déconnecter
+          </button>
+        )}
+      </form>
+
+      {/* Mentions légales */}
+      <p className="text-xs text-[#6e6a65] text-center max-w-xs mt-6">
+        En vous connectant, vous acceptez nos conditions générales d’utilisation et notre politique de confidentialité.
+      </p>
     </div>
-  );
+  )
 }
