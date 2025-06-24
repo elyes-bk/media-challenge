@@ -11,6 +11,7 @@ export default function Nav() {
     { href: '/login', label: 'Connexion' },
     { href: '/register', label: 'Inscription' },
     { href: '/events', label: 'Événements' },
+    { href: '/start', label: 'Start' },
   ];
 
   return (

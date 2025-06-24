@@ -1,8 +1,26 @@
 'use client'
 import Image from 'next/image'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 
 export default function RegisterPage() {
+  const router = useRouter()
+
+    useEffect(() => {
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setIsConnected(true)
+          router.replace('/')  // pour rediriger si déjà connecté
+   
+        } else {
+          setIsConnected(false)
+        }
+      }
+      checkSession()
+    }, [])
+
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -37,12 +55,18 @@ export default function RegisterPage() {
         pour explorer Paris autrement
       </p>
 
-      {/* Boutons principaux */}
+      {/* Boutons principaux avec redirection */}
       <div className="w-full max-w-xs flex flex-col gap-4">
-        <button className="bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a]">
+        <button
+          className="bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a]"
+          onClick={() => router.push('/register')}
+        >
           Créer un compte
         </button>
-        <button className="border text-[#23221f] font-semibold py-3 rounded-lg text-base bg-[#f5ecdc] shadow-sm transition hover:bg-gray-100">
+        <button
+          className="border text-[#23221f] font-semibold py-3 rounded-lg text-base bg-[#f5ecdc] shadow-sm transition hover:bg-gray-100"
+          onClick={() => router.push('/login')}
+        >
           Se connecter
         </button>
       </div>
@@ -75,7 +99,7 @@ export default function RegisterPage() {
 
       {/* Lien continuer sans compte */}
       <div className="w-full max-w-xs mt-8">
-        <a href="#" className="flex items-center justify-center gap-2 font-semibold underline text-[#23221f] text-base hover:text-[#179a9c] transition">
+        <a href="/" className="flex items-center justify-center gap-2 font-semibold underline text-[#23221f] text-base hover:text-[#179a9c] transition">
           Continuer sans compte
           <span aria-hidden="true" className="text-lg">→</span>
         </a>
