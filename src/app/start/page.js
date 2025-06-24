@@ -99,7 +99,7 @@ export default function RegisterPage() {
 
       {/* Lien continuer sans compte */}
       <div className="w-full max-w-xs mt-8">
-        <a href="/" className="flex items-center justify-center gap-2 font-semibold underline text-[#23221f] text-base hover:text-[#179a9c] transition">
+        <a href="/events" className="flex items-center justify-center gap-2 font-semibold underline text-[#23221f] text-base hover:text-[#179a9c] transition">
           Continuer sans compte
           <span aria-hidden="true" className="text-lg">→</span>
         </a>
