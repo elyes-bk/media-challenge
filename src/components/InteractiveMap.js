@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
+import L from 'leaflet'
+
 
 // Formule de Haversine pour calculer la distance entre deux points GPS en mètres
 function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
@@ -31,6 +33,14 @@ function MapFocus({ focusedEvent, markerRefs }) {
   }, [focusedEvent, map, markerRefs])
   return null
 }
+
+// Définir une icône personnalisée
+const customIcon = new L.Icon({
+  iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
+  iconSize: [32, 32], // taille de l'icône
+  iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
+  popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
+})
 
 export default function InteractiveMap({ events, proximityRadius = 100, focusedEvent }) {
   const [userPosition, setUserPosition] = useState(null)
@@ -75,7 +85,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
           : (userPosition || [48.8584, 2.2945])
       }
       zoom={13}
-      style={{ height: 400, width: '100%' }}
+      style={{ height: 'calc(100vh - 48px)', width: '100%' }}
       scrollWheelZoom={true}
     >
       <TileLayer
@@ -88,6 +98,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
           key={ev.id}
           position={[ev.latitude, ev.longitude]}
           ref={ref => { markerRefs.current[ev.id] = ref }}
+          icon={customIcon} // <-- Ajout de l'icône personnalisée ici
         >
           <Popup>
             <strong>{ev.titre}</strong><br />
