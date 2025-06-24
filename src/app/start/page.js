@@ -1,7 +1,22 @@
 'use client'
 import Image from 'next/image'
+import { supabase } from '../../lib/supabaseClient'
 
 export default function RegisterPage() {
+  const handleGoogleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: typeof window !== 'undefined'
+          ? `${window.location.origin}/auth/callback`
+          : undefined,
+      }
+    })
+    if (error) {
+      alert('Erreur lors de la connexion avec Google : ' + error.message)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5ecdc] px-4 py-8">
       {/* Logo */}
@@ -39,13 +54,13 @@ export default function RegisterPage() {
         <div className="flex-grow h-px bg-[#d2c7b9]" />
       </div>
 
-      {/* Boutons sociaux */}
+      {/* Bouton Google uniquement */}
       <div className="w-full max-w-xs flex flex-col gap-3">
-        <button className="flex items-center justify-center gap-3 bg-white py-3 rounded-lg font-semibold text-[#23221f] shadow border border-gray-200 hover:bg-gray-50 transition">
-          <span className="text-xl"></span>
-          Continuer avec Apple
-        </button>
-        <button className="flex items-center justify-center gap-3 bg-white py-3 rounded-lg font-semibold text-[#23221f] shadow border border-gray-200 hover:bg-gray-50 transition">
+        <button
+          type="button"
+          className="flex items-center justify-center gap-3 bg-white py-3 rounded-lg font-semibold text-[#23221f] shadow border border-gray-200 hover:bg-gray-50 transition"
+          onClick={handleGoogleLogin}
+        >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <g>
               <path fill="#4285F4" d="M21.35 11.1h-9.18v2.92h5.98c-.26 1.43-1.57 4.19-5.98 4.19-3.6 0-6.53-2.98-6.53-6.66s2.93-6.66 6.53-6.66c2.05 0 3.42.87 4.2 1.61l2.87-2.8C17.31 2.73 15.02 1.5 12.17 1.5 6.76 1.5 2.23 6.03 2.23 11.44s4.53 9.94 9.94 9.94c5.74 0 9.52-4.02 9.52-9.7 0-.65-.07-1.14-.16-1.58z"/>
