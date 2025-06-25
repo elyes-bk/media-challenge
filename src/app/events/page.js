@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabaseClient'
-import InteractiveMap from '@/components/InteractiveMap'
 import { filterEventsByCategory } from '@/utils/filters' // <-- Ajout
 
 // ⚠️ Important : on désactive le SSR pour ce composant
