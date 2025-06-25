@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { getSessionAndRedirect } from '../../lib/auth.js'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -13,17 +14,7 @@ export default function Login() {
   const router = useRouter()
 
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        setIsConnected(true)
-        router.replace('/')  // pour rediriger si déjà connecté
- 
-      } else {
-        setIsConnected(false)
-      }
-    }
-    checkSession()
+    getSessionAndRedirect(router, "/profil").then(setIsConnected)
   }, [])
 
 const handleLogin = async (e) => {
@@ -39,21 +30,9 @@ const handleLogin = async (e) => {
     setError(error.message)
   } else {
     setIsConnected(true)
-    router.replace('/') // Redirige UNIQUEMENT si la connexion a réussi
+    router.replace('/profil') // Redirige UNIQUEMENT si la connexion a réussi
   }
 }
-
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      setError("Erreur déconnexion : " + error.message)
-    } else {
-      setIsConnected(false)
-      setEmail('')
-      setPassword('')
-    }
-  }
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-[#f5ecdc] px-4 py-6 relative">
@@ -133,15 +112,6 @@ const handleLogin = async (e) => {
         >
           {loading ? 'Connexion...' : 'Se connecter'}
         </button>
-        {isConnected && (
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full mt-2 bg-[#d33] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#b22]"
-          >
-            Se déconnecter
-          </button>
-        )}
       </form>
 
       {/* Mentions légales */}

@@ -7,19 +7,28 @@ import tv from '../../public/icon/tv.png'
 import map from '../../public/icon/map.png'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { isConnected } from '@/lib/auth'
+import { useEffect, useState } from 'react'
 
 export default function Nav() {
   const pathname = usePathname()
+  const [redirectConnected, setRedirectConnected] = useState(null)
+
+  useEffect(() => {
+    isConnected().then(setRedirectConnected)
+  }, [])
+
+  if (redirectConnected === null) return null // ou un spinner si tu veux
 
   const links = [
     { href: '/events', icon: map },
     { href: '/video', icon: tv },
     { href: '/listEvent', icon: bell },
-    { href: '/start', icon: user },
+    { href: redirectConnected ? '/profil' : '/login', icon: user },
   ]
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex justify-around items-center h-12 bg-[#F4EDDE] border-t border-gray-300 z-1000">
+    <nav className="fixed bottom-0 left-0 right-0 flex justify-around items-center h-18 bg-[#F4EDDE] border-t border-gray-300 z-1000">
       {links.map(({ href, icon }) => {
         const isActive = pathname === href
         return (

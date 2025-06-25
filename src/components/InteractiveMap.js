@@ -97,7 +97,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
   }
 
   return (
-    <div className="relative" style={{ height: 'calc(100vh - 48px)' }}>
+    <div className="relative">
       <MapContainer
         center={
           focusedEvent && focusedEvent.latitude && focusedEvent.longitude
@@ -105,7 +105,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
             : (userPosition || [48.8584, 2.2945])
         }
         zoom={13}
-        style={{ height: 'calc(100vh - 48px)', width: '100%' }}
+        style={{ height: 'calc(100vh - 72px)', width: '100%' }}
         scrollWheelZoom={true}
       >
         <TileLayer
