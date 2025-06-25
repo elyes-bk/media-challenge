@@ -34,31 +34,38 @@ function MapFocus({ focusedEvent, markerRefs }) {
   return null
 }
 
-// Définir une icône personnalisée
-const customIcon = new L.Icon({
-  iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
-  iconSize: [32, 32], // taille de l'icône
-  iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
-  popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
-})
-
-const myPosition = new L.Icon({
-  iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
-  iconSize: [32, 32], // taille de l'icône
-  iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
-  popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
-})
 
 export default function InteractiveMap({ events, proximityRadius = 100, focusedEvent }) {
   const [userPosition, setUserPosition] = useState(null)
   const [notifiedEvents, setNotifiedEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [icons, setIcons] = useState({ customIcon: null, myPositionIcon: null })
+
 
   // Pour gérer les refs des markers
   const markerRefs = useRef({})
 
   // Demande la position de l'utilisateur
   useEffect(() => {
+
+    // Définir une icône personnalisée
+    const customIcon = new L.Icon({
+      iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
+      iconSize: [32, 32], // taille de l'icône
+      iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
+      popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
+    })
+
+    const myPositionIcon = new L.Icon({
+      iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
+      iconSize: [32, 32], // taille de l'icône
+      iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
+      popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
+    })
+    setIcons({customIcon,myPositionIcon})
+  },[])
+
+  useEffect(()=>{
     if (!navigator.geolocation) return
     const watchId = navigator.geolocation.watchPosition(
       pos => {
@@ -85,6 +92,10 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
     })
   }, [userPosition, events, proximityRadius, notifiedEvents])
 
+  if (!icons.customIcon || !icons.myPositionIcon) {
+    return null // ou un loader si tu veux
+  }
+
   return (
     <div className="relative" style={{ height: 'calc(100vh - 48px)' }}>
       <MapContainer
@@ -107,7 +118,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
             key={ev.id}
             position={[ev.latitude, ev.longitude]}
             ref={ref => { markerRefs.current[ev.id] = ref }}
-            icon={customIcon} // <-- Ajout de l'icône personnalisée ici
+            icon={icons.customIcon} // <-- Ajout de l'icône personnalisée ici
             eventHandlers={{
               click: () => setSelectedEvent(ev)
             }}
@@ -127,7 +138,7 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
           </Marker>
         ))}
         {userPosition && (
-          <Marker position={userPosition} icon={myPosition}>
+          <Marker position={userPosition} icon={icons.myPositionIcon}>
             <Popup>Votre position</Popup>
           </Marker>
         )}
