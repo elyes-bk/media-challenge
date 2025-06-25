@@ -8,8 +8,8 @@ export default function RootLayout({ children }) {
     <html>
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/icons/icon-192x192.png" />
-        <meta name="theme-color" content="#1E3A5F" />      
+        <link rel="icon" href="/icon/Frame.png" />
+        <meta name="theme-color" content="# #0070f3" />      
       </head>
       <body>
         <Nav />
