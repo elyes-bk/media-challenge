@@ -5,6 +5,11 @@ import { supabase } from '@/lib/supabaseClient'
 import InteractiveMap from '@/components/InteractiveMap'
 import { filterEventsByCategory } from '@/utils/filters' // <-- Ajout
 
+// ⚠️ Important : on désactive le SSR pour ce composant
+const InteractiveMap = dynamic(() => import('@/components/InteractiveMap'), {
+  ssr: false,
+})
+
 export default function EventsPage() {
   const [events, setEvents] = useState([])
   const [categories, setCategories] = useState([])
