@@ -1,5 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { supabase } from '@/lib/supabaseClient'
 import InteractiveMap from '@/components/InteractiveMap'
 import { filterEventsByCategory } from '@/utils/filters' // <-- Ajout
@@ -9,7 +10,7 @@ export default function EventsPage() {
   const [categories, setCategories] = useState([])
   const [eventCategories, setEventCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [focusedEvent, setFocusedEvent] = useState(null) // <--- Ajout
+  const [focusedEvent, setFocusedEvent] = useState(null)
 
   useEffect(() => {
     fetchAll()

@@ -1,11 +1,25 @@
 'use client'
 import Image from 'next/image'
-import { supabase } from '../../lib/supabaseClient'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../../lib/supabaseClient'
 
 export default function RegisterPage() {
+  const router = useRouter()
 
-  const router = useRouter();
+    useEffect(() => {
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          setIsConnected(true)
+          router.replace('/')  // pour rediriger si déjà connecté
+   
+        } else {
+          setIsConnected(false)
+        }
+      }
+      checkSession()
+    }, [])
 
   const handleGoogleLogin = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -19,14 +33,6 @@ export default function RegisterPage() {
     if (error) {
       alert('Erreur lors de la connexion avec Google : ' + error.message)
     }
-  }
-
-  const registerForm= () => {
-    router.push('/register')
-  }
-
-  const loginForm= () => {
-    router.push('/login')
   }
 
   return (
@@ -49,15 +55,17 @@ export default function RegisterPage() {
         pour explorer Paris autrement
       </p>
 
-      {/* Boutons principaux */}
+      {/* Boutons principaux avec redirection */}
       <div className="w-full max-w-xs flex flex-col gap-4">
-        <button className="bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a]"
-          onClick={registerForm}
+        <button
+          className="bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a]"
+          onClick={() => router.push('/register')}
         >
           Créer un compte
         </button>
-        <button className="border text-[#23221f] font-semibold py-3 rounded-lg text-base bg-[#f5ecdc] shadow-sm transition hover:bg-gray-100"
-          onClick={loginForm}
+        <button
+          className="border text-[#23221f] font-semibold py-3 rounded-lg text-base bg-[#f5ecdc] shadow-sm transition hover:bg-gray-100"
+          onClick={() => router.push('/login')}
         >
           Se connecter
         </button>

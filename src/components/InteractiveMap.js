@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
 import L from 'leaflet'
-
+import SwipePopUp from './SwipePopUp'
 
 // Formule de Haversine pour calculer la distance entre deux points GPS en mètres
 function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
@@ -42,9 +42,17 @@ const customIcon = new L.Icon({
   popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
 })
 
+const myPosition = new L.Icon({
+  iconUrl: '/icon/Frame.png', // Placez votre image dans le dossier public ou changez le chemin
+  iconSize: [32, 32], // taille de l'icône
+  iconAnchor: [16, 32], // point de l'icône correspondant à la position du marker
+  popupAnchor: [0, -32], // point d'où le popup s'ouvre relativement à l'iconAnchor
+})
+
 export default function InteractiveMap({ events, proximityRadius = 100, focusedEvent }) {
   const [userPosition, setUserPosition] = useState(null)
   const [notifiedEvents, setNotifiedEvents] = useState([])
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Pour gérer les refs des markers
   const markerRefs = useRef({})
@@ -78,44 +86,57 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
   }, [userPosition, events, proximityRadius, notifiedEvents])
 
   return (
-    <MapContainer
-      center={
-        focusedEvent && focusedEvent.latitude && focusedEvent.longitude
-          ? [focusedEvent.latitude, focusedEvent.longitude]
-          : (userPosition || [48.8584, 2.2945])
-      }
-      zoom={13}
-      style={{ height: 'calc(100vh - 48px)', width: '100%' }}
-      scrollWheelZoom={true}
-    >
-      <TileLayer
-        attribution='&copy; OpenStreetMap'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div className="relative" style={{ height: 'calc(100vh - 48px)' }}>
+      <MapContainer
+        center={
+          focusedEvent && focusedEvent.latitude && focusedEvent.longitude
+            ? [focusedEvent.latitude, focusedEvent.longitude]
+            : (userPosition || [48.8584, 2.2945])
+        }
+        zoom={13}
+        style={{ height: 'calc(100vh - 48px)', width: '100%' }}
+        scrollWheelZoom={true}
+      >
+        <TileLayer
+          attribution='&copy; OpenStreetMap'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapFocus focusedEvent={focusedEvent} markerRefs={markerRefs} />
+        {events.map(ev => (
+          <Marker
+            key={ev.id}
+            position={[ev.latitude, ev.longitude]}
+            ref={ref => { markerRefs.current[ev.id] = ref }}
+            icon={customIcon} // <-- Ajout de l'icône personnalisée ici
+            eventHandlers={{
+              click: () => setSelectedEvent(ev)
+            }}
+          >
+          {/*
+            <Popup>
+              <strong>{ev.titre}</strong><br />
+              {ev.description}
+            </Popup>
+          */}
+          
+            <Circle
+              center={[ev.latitude, ev.longitude]}
+              radius={proximityRadius}
+              pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
+            />
+          </Marker>
+        ))}
+        {userPosition && (
+          <Marker position={userPosition} icon={myPosition}>
+            <Popup>Votre position</Popup>
+          </Marker>
+        )}
+      </MapContainer>
+      <SwipePopUp 
+        event={selectedEvent} 
+        onClose={()=>setSelectedEvent(null)}
       />
-      <MapFocus focusedEvent={focusedEvent} markerRefs={markerRefs} />
-      {events.map(ev => (
-        <Marker
-          key={ev.id}
-          position={[ev.latitude, ev.longitude]}
-          ref={ref => { markerRefs.current[ev.id] = ref }}
-          icon={customIcon} // <-- Ajout de l'icône personnalisée ici
-        >
-          <Popup>
-            <strong>{ev.titre}</strong><br />
-            {ev.description}
-          </Popup>
-          <Circle
-            center={[ev.latitude, ev.longitude]}
-            radius={proximityRadius}
-            pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
-          />
-        </Marker>
-      ))}
-      {userPosition && (
-        <Marker position={userPosition}>
-          <Popup>Votre position</Popup>
-        </Marker>
-      )}
-    </MapContainer>
+      
+    </div>
   )
 }
