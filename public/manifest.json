@@ -13,7 +13,7 @@
 
   "icons": [
     {
-      "src": "/logo-vp.svg",
+      "src": "icon/Frame.png",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
