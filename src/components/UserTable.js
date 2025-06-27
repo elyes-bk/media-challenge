@@ -7,6 +7,7 @@ export default function UserTable() {
   const [users, setUsers] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
+  const [editingUser, setEditingUser] = useState(null)
   const [form, setForm] = useState({ surnom: '', email: '', password: '', theme: false, role: false })
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
@@ -20,12 +21,36 @@ export default function UserTable() {
     if (!error) setUsers(data || [])
   }
 
-  // Ajout d'un utilisateur via Supabase Auth (client-side)
   async function handleAdd(e) {
     e.preventDefault()
     setLoading(true)
     setMessage('')
-    // Création du compte dans Supabase Auth
+
+    if (editingUser) {
+      // ============ MODE MODIFICATION ============
+      const { error } = await supabase
+        .from('users')
+        .update({
+          surnom: form.surnom,
+          theme: form.theme,
+          role: form.role
+        })
+        .eq('id', editingUser.id)
+
+      if (error) {
+        setMessage("Erreur lors de la modification : " + error.message)
+      } else {
+        setMessage("Utilisateur modifié !")
+        setEditingUser(null)
+        setForm({ surnom: '', email: '', password: '', theme: false, role: false })
+        fetchUsers()
+      }
+
+      setLoading(false)
+      return
+    }
+
+    // ============ MODE AJOUT ============
     const { data, error } = await supabase.auth.signUp({
       email: form.email,
       password: form.password,
@@ -75,11 +100,27 @@ export default function UserTable() {
     fetchUsers()
   }
 
+  function startEdit(user) {
+    setEditingUser(user)
+    setForm({
+      surnom: user.surnom,
+      email: user.email,
+      password: '', // non modifiable ici
+      theme: user.theme,
+      role: user.role
+    })
+  }
+
+  function cancelEdit() {
+    setEditingUser(null)
+    setForm({ surnom: '', email: '', password: '', theme: false, role: false })
+  }
 
   return (
     <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg p-8">
       <h2 className="text-2xl font-bold mb-6 text-gray-900">Utilisateurs</h2>
-      {/* Formulaire au-dessus */}
+
+      {/* Formulaire Ajout/Modification */}
       <form onSubmit={handleAdd} className="mb-8 flex flex-col gap-3">
         <input
           type="email"
@@ -88,6 +129,7 @@ export default function UserTable() {
           onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
           required
           className="border border-gray-300 rounded-md px-4 py-2"
+          disabled={!!editingUser} // désactiver l'email si modification
         />
         <input
           type="text"
@@ -97,14 +139,16 @@ export default function UserTable() {
           required
           className="border border-gray-300 rounded-md px-4 py-2"
         />
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          value={form.password}
-          onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-          required
-          className="border border-gray-300 rounded-md px-4 py-2"
-        />
+        {!editingUser && (
+          <input
+            type="password"
+            placeholder="Mot de passe"
+            value={form.password}
+            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+            required
+            className="border border-gray-300 rounded-md px-4 py-2"
+          />
+        )}
         <select
           value={form.theme}
           onChange={e => setForm(f => ({ ...f, theme: e.target.value === "true" }))}
@@ -121,17 +165,29 @@ export default function UserTable() {
           <option value={false}>Utilisateur</option>
           <option value={true}>Admin</option>
         </select>
-        <button
-          type="submit"
-          disabled={loading}
-          className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-md"
-        >
-          {loading ? "Ajout..." : "Ajouter"}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="bg-blue-700 hover:bg-blue-800 text-white font-semibold px-6 py-2 rounded-md"
+          >
+            {loading ? (editingUser ? "Modification..." : "Ajout...") : (editingUser ? "Modifier" : "Ajouter")}
+          </button>
+          {editingUser && (
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="bg-gray-400 hover:bg-gray-500 text-white font-semibold px-6 py-2 rounded-md"
+            >
+              Annuler
+            </button>
+          )}
+        </div>
         {message && (
           <div className="text-sm text-red-600 mt-2">{message}</div>
         )}
       </form>
+
       {/* Tableau */}
       <table className="w-full border border-gray-300 rounded-md">
         <thead className="bg-gray-100">
@@ -150,7 +206,13 @@ export default function UserTable() {
               <td className="py-3 px-6 text-gray-900">{u.surnom}</td>
               <td className="py-3 px-6 text-gray-900">{u.theme ? "Sombre" : "Clair"}</td>
               <td className="py-3 px-6 text-gray-900">{u.role ? "Admin" : "Utilisateur"}</td>
-              <td className="py-3 px-6">
+              <td className="py-3 px-6 flex gap-2">
+                <button
+                  onClick={() => startEdit(u)}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-md"
+                >
+                  Modifier
+                </button>
                 <button
                   onClick={() => { setUserToDelete(u); setShowModal(true); }}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
@@ -162,6 +224,8 @@ export default function UserTable() {
           ))}
         </tbody>
       </table>
+
+      {/* Modal Confirmation */}
       <ConfirmModal
         show={showModal}
         onClose={() => setShowModal(false)}

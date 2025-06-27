@@ -6,12 +6,13 @@ import ConfirmModal from './ConfirmModal'
 const initialForm = {
   titre: '',
   description: '',
-  personnalité: '',
+  personnalite: '',
   date_debut: '',
   date_fin: '',
   latitude: '',
   longitude: '',
-  adresse: ''
+  adresse: '',
+  image_url:''
 }
 
 export default function EventTable() {
@@ -24,6 +25,7 @@ export default function EventTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState(null)
+  const [imageFile, setImageFile] = useState(null)
 
   useEffect(() => {
     fetchEvents()
@@ -49,16 +51,60 @@ export default function EventTable() {
     return []
   }
 
+  //televerser une image
+  async function uploadImage(imageFile) {
+    if (!imageFile) return null
+
+    const fileExt = imageFile.name.split('.').pop()
+    const fileName = `${Date.now()}.${fileExt}`
+    const filePath = `events/${fileName}`
+
+    const { error: uploadError } = await supabase
+      .storage
+      .from('event-images') // le nom de ton bucket
+      .upload(filePath, imageFile)
+
+    if (uploadError) {
+      throw new Error(uploadError.message)
+    }
+
+    const { data } = supabase
+      .storage
+      .from('event-images')
+      .getPublicUrl(filePath)
+
+    return data.publicUrl
+  }
+
   async function handleAddOrUpdate(e) {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    let imageUrl = form.image_url || null // utile pour les updates
+    
+    const {
+      imageFile, // on l’enlève de ce qui sera envoyé
+      ...restForm
+    } = form
+
+    if (imageFile) {
+      try {
+        imageUrl = await uploadImage(imageFile)
+      } catch (uploadErr) {
+        setError(uploadErr.message)
+        setLoading(false)
+        return
+      }
+    }
+
     const toInsert = {
-      ...form,
+      ...restForm,
       latitude: form.latitude !== '' ? parseFloat(form.latitude) : null,
       longitude: form.longitude !== '' ? parseFloat(form.longitude) : null,
       date_debut: form.date_debut !== '' ? form.date_debut : null,
-      date_fin: form.date_fin !== '' ? form.date_fin : null
+      date_fin: form.date_fin !== '' ? form.date_fin : null,
+      image_url: imageUrl
     }
 
     if (editingId) {
@@ -135,13 +181,15 @@ export default function EventTable() {
     setForm({
       titre: event.titre || '',
       description: event.description || '',
-      personnalité: event.personnalité || '',
+      personnalite: event.personnalite || '',
       date_debut: event.date_debut ? event.date_debut.slice(0, 16) : '',
       date_fin: event.date_fin ? event.date_fin.slice(0, 16) : '',
       latitude: event.latitude || '',
       longitude: event.longitude || '',
-      adresse: event.adresse || ''
+      adresse: event.adresse || '',
+      image_url: event.image_url || ''
     })
+    setImageFile(null)
     const cats = await fetchEventCategories(event.id)
     setSelectedCategories(cats.map(String))
   }
@@ -159,6 +207,27 @@ export default function EventTable() {
       {/* Formulaire d'ajout/modification */}
       <form onSubmit={handleAddOrUpdate} className="mb-8 flex flex-col gap-3">
         <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setForm({ ...form, imageFile: e.target.files[0] })}
+        />
+        {imageFile && (
+          <img
+            src={URL.createObjectURL(imageFile)}
+            alt="Aperçu"
+            className="w-24 h-24 object-cover rounded border"
+          />
+        )}
+
+{!imageFile && form.image_url && (
+  <img
+    src={form.image_url}
+    alt="Image existante"
+    className="w-24 h-24 object-cover rounded border"
+  />
+)}
+
+        <input
           placeholder="Titre"
           value={form.titre}
           onChange={e => setForm(f => ({ ...f, titre: e.target.value }))}
@@ -174,8 +243,8 @@ export default function EventTable() {
         />
         <input
           placeholder="Personnalité"
-          value={form.personnalité}
-          onChange={e => setForm(f => ({ ...f, personnalité: e.target.value }))}
+          value={form.personnalite}
+          onChange={e => setForm(f => ({ ...f, personnalite: e.target.value }))}
           className="border border-gray-300 rounded-md px-4 py-2 text-gray-700"
         />
         <label className="text-gray-700 font-medium">Date de début</label>
@@ -272,7 +341,7 @@ export default function EventTable() {
             <tr key={ev.id} className="border-t border-gray-200 hover:bg-gray-50">
               <td className="py-2 px-4 text-gray-900">{ev.titre}</td>
               <td className="py-2 px-4 text-gray-900">{ev.description}</td>
-              <td className="py-2 px-4 text-gray-900">{ev.personnalité}</td>
+              <td className="py-2 px-4 text-gray-900">{ev.personnalite}</td>
               <td className="py-2 px-4 text-gray-900">{ev.date_debut ? new Date(ev.date_debut).toLocaleString() : ''}</td>
               <td className="py-2 px-4 text-gray-900">{ev.date_fin ? new Date(ev.date_fin).toLocaleString() : ''}</td>
               <td className="py-2 px-4 text-gray-900">{ev.latitude}</td>

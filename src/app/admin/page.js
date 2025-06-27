@@ -7,6 +7,7 @@ import AdminTabs from '../../components/AdminTabs'
 import UserTable from '../../components/UserTable'
 import EventTable from '../../components/EventTable'
 import CategoryTable from '../../components/CategoryTable'
+import VideoTable from '../../components/VideoTable'
 
 export default function AdminPage() {
 
@@ -58,6 +59,7 @@ export default function AdminPage() {
         {activeTab === 'users' && <UserTable />}
         {activeTab === 'events' && <EventTable />}
         {activeTab === 'categories' && <CategoryTable />}
+        {activeTab === 'video' && <VideoTable />}
       </div>
     </div>
   )

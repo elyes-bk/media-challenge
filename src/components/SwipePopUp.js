@@ -12,20 +12,33 @@ export default function SwipePopUp({ event, onClose }) {
   if (!event) return null
 
   return (
-    <div className={`absolute bottom-0 left-0 right-0 h-[90%] z-500 bg-white rounded-t-2xl p-4 shadow-xl transform transition-transform duration-300 ease-in-out ${
+    <div className={`absolute bottom-0 left-0 right-0 h-[90%] bg-[#F4EDDE] z-500 rounded-t-2xl p-4 shadow-xl transform transition-transform duration-300 ease-in-out ${
         visible ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
       <div className="flex flex-col gap-2">
-        {/* Titre */}
-        <h2 className="text-lg font-bold">{event.titre}</h2>
-        {/* Description */}
-        <p className="text-sm text-gray-700">{event.description}</p>
+        {event.image_url && (
+          <img
+            src={event.image_url}
+            alt="Illustration"
+            className="w-full h-40 object-cover rounded-lg mb-2"
+          />
+        )}
+
+        <h2 className="text-xl font-bold text-gray-900">{event.titre}</h2>
+        <p className="text-sm text-gray-700">{event.date_debut}</p>
+
+        <p className="font-semibold text-gray-800">
+          {event.personnalite || 'Titre secondaire'}
+        </p>
+        <p className="text-sm text-gray-800 leading-relaxed">
+          {event.description}
+        </p>
 
         {/* Bouton Fermer */}
         <button
           onClick={onClose}
-          className="mt-4 self-start bg-blue-600 text-white px-4 py-2 rounded-lg"
+          className="mt-4 w-full bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2 px-4 rounded-lg flex justify-center items-center gap-2"
         >
           Fermer
         </button>
