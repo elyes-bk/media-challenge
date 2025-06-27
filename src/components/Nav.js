@@ -22,9 +22,9 @@ export default function Nav() {
 
   const links = [
     { href: '/events', icon: map },
-    { href: '/video', icon: tv },
+    { href: '/videos', icon: tv },
     { href: '/listEvent', icon: bell },
-    { href: redirectConnected ? '/profil' : '/login', icon: user },
+    { href: redirectConnected ? '/profile' : '/login', icon: user },
   ]
 
   return (

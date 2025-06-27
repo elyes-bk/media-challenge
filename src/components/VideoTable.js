@@ -1,9 +1,10 @@
+
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import { v4 as uuidv4 } from 'uuid'
+import { supabase } from '../lib/supabaseClient'
 import ConfirmModal from './ConfirmModal'
+import { v4 as uuidv4 } from 'uuid'
 
 const initialForm = {
   titre: '',
@@ -27,7 +28,7 @@ export default function VideoTable() {
   }, [])
 
   async function fetchVideos() {
-    const { data, error } = await supabase.from('videos').select().order('uploaded_at', { ascending: false })
+    const { data, error } = await supabase.from('videos').select()
     if (!error) setVideos(data || [])
     else console.error(error)
   }
@@ -37,40 +38,59 @@ export default function VideoTable() {
     setLoading(true)
     setError('')
 
-    let uploadedUrlImportee = form.url_importee
+    let uploadedUrlImportee = ''
 
     if (file) {
       const fileExt = file.name.split('.').pop()
       const fileName = `${uuidv4()}.${fileExt}`
-      const { error: uploadError } = await supabase.storage.from('videos').upload(fileName, file)
+      const { data, error: uploadError } = await supabase
+        .storage
+        .from('videos')
+        .upload(fileName, file)
 
       if (uploadError) {
-        setError('Erreur lors de l’upload : ' + uploadError.message)
+        setError('Erreur lors de l’upload du fichier : ' + uploadError.message)
         setLoading(false)
         return
       }
 
-      const { data: publicUrlData } = supabase.storage.from('videos').getPublicUrl(fileName)
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('videos')
+        .getPublicUrl(fileName)
+
       uploadedUrlImportee = publicUrlData?.publicUrl || ''
     }
 
-    const toInsert = {
-      titre: form.titre,
-      description: form.description,
-      url: form.url || '',
-      url_importee: uploadedUrlImportee,
-      uploaded_at: new Date().toISOString()
-    }
+        const toInsert = {
+        ...form,
+        uploaded_at: new Date().toISOString(),
+        url: form.url || ''
+      }
+
+    
+      if (uploadedUrlImportee) {
+        toInsert.url_importee = uploadedUrlImportee
+      }
+
+
 
     if (editingId) {
-      const { error: updateError } = await supabase.from('videos').update(toInsert).eq('id', editingId)
+      const { error: updateError } = await supabase
+        .from('videos')
+        .update(toInsert)
+        .eq('id', editingId)
+
       if (updateError) {
         setError(updateError.message)
         setLoading(false)
         return
       }
     } else {
-      const { error: insertError } = await supabase.from('videos').insert([toInsert])
+      const { error: insertError } = await supabase
+        .from('videos')
+        .insert([toInsert])
+
       if (insertError) {
         setError(insertError.message)
         setLoading(false)
@@ -86,18 +106,44 @@ export default function VideoTable() {
   }
 
   async function handleDelete(id) {
-    const { data: videoData } = await supabase.from('videos').select('url_importee').eq('id', id).single()
-    const urlImportee = videoData?.url_importee
+    const { data: videoData, error: fetchError } = await supabase
+      .from('videos')
+      .select('url_importee')
+      .eq('id', id)
+      .single()
 
-    if (urlImportee) {
+    if (fetchError) {
+      console.error('Erreur récupération vidéo :', fetchError)
+      return
+    }
+
+    if (videoData?.url_importee) {
+      const urlImportee = videoData.url_importee
       const parts = urlImportee.split('/videos/')
+      
       if (parts.length === 2) {
         const fileName = parts[1].split('?')[0]
-        await supabase.storage.from('videos').remove([fileName])
+
+        const { error: storageError } = await supabase
+          .storage
+          .from('videos')
+          .remove([fileName])
+
+        if (storageError) {
+          console.error('Erreur suppression fichier storage :', storageError)
+        }
       }
     }
 
-    await supabase.from('videos').delete().eq('id', id)
+    const { error: deleteError } = await supabase
+      .from('videos')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) {
+      console.error('Erreur suppression enregistrement :', deleteError)
+    }
+
     setShowModal(false)
     fetchVideos()
   }
@@ -124,7 +170,7 @@ export default function VideoTable() {
     <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
       <h2 className="text-2xl font-bold mb-6 text-gray-900">Vidéos</h2>
 
-      <form onSubmit={handleAddOrUpdate} className="mb-8 flex flex-col gap-3">
+      <form onSubmit={handleAddOrUpdate} className="mb-8 flex flex-col gap-3 text-black">
         <input
           placeholder="Titre"
           value={form.titre}
@@ -140,11 +186,12 @@ export default function VideoTable() {
           className="border border-gray-300 rounded-md px-4 py-2"
         />
         <input
-          placeholder="URL externe (YouTube, Vimeo...)"
+          placeholder="URL de la vidéo (YouTube, Vimeo...)"
           value={form.url}
           onChange={e => setForm(f => ({ ...f, url: e.target.value }))}
           className="border border-gray-300 rounded-md px-4 py-2"
         />
+
         <div>
           <label className="text-gray-700 font-medium mb-1 block">Importer une vidéo</label>
           <input
@@ -172,7 +219,6 @@ export default function VideoTable() {
           >
             {editingId ? (loading ? 'Mise à jour...' : 'Mettre à jour') : (loading ? 'Ajout...' : 'Ajouter')}
           </button>
-
           {editingId && (
             <button
               type="button"
@@ -188,48 +234,62 @@ export default function VideoTable() {
       </form>
 
       <table className="w-full border border-gray-300 rounded-md">
-        <thead className="bg-gray-100">
+        <thead className="bg-gray-100 text-black">
           <tr>
             <th className="py-3 px-4 text-left">Titre</th>
             <th className="py-3 px-4 text-left">Description</th>
-            <th className="py-3 px-4 text-left">Vidéo</th>
+            <th className="py-3 px-4 text-left">URL</th>
             <th className="py-3 px-4 text-left">Actions</th>
           </tr>
         </thead>
         <tbody>
           {videos.map(video => (
-            <tr key={video.id} className="border-t border-gray-200 hover:bg-gray-50">
+            <tr key={video.id} className="border-t border-gray-200 text-black">
               <td className="py-2 px-4">{video.titre}</td>
               <td className="py-2 px-4">{video.description}</td>
-              <td className="py-2 px-4 text-blue-600 flex flex-col gap-1">
-                {video.url && (
-                  <a href={video.url} target="_blank" rel="noopener noreferrer" className="underline">
-                    Lien externe
-                  </a>
-                )}
-                {video.url_importee && (
-                  <a href={`/videos/${video.id}`} className="underline text-blue-600 hover:text-blue-800">
-                    Voir vidéo
-                  </a>
-                )}
-              </td>
-              <td className="py-2 px-4 flex flex-col gap-2">
-                <button
-                  onClick={() => handleEdit(video)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-md"
-                >
-                  Modifier
-                </button>
-                <button
-                  onClick={() => {
-                    setVideoToDelete(video)
-                    setShowModal(true)
-                  }}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
-                >
-                  Supprimer
-                </button>
-              </td>
+
+
+
+
+            <td className="py-2 px-4 text-blue-600">
+  <div className="flex flex-col gap-1">
+    {video.url && (
+      <a href={video.url} target="_blank" rel="noopener noreferrer" className="underline">
+        Lien vers URL
+      </a>
+    )}
+    {video.url_importee && (
+      <a href={`/videos/${video.id}`} className="underline text-blue-600 hover:text-blue-800">
+        Voir vidéo
+      </a>
+    )}
+  </div>
+</td>
+
+
+<td className="py-2 px-4 flex flex-col gap-2">
+  <button
+    onClick={() => handleEdit(video)}
+    className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-md mb-1"
+  >
+    Modifier
+  </button>
+  <button
+    onClick={() => {
+      setVideoToDelete(video)
+      setShowModal(true)
+    }}
+    className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"
+  >
+    Supprimer
+  </button>
+</td>
+
+
+
+
+
+
             </tr>
           ))}
         </tbody>
@@ -245,3 +305,4 @@ export default function VideoTable() {
     </div>
   )
 }
+
