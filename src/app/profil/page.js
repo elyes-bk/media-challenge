@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useRouter } from 'next/navigation';
 import { supabase } from "@/lib/supabaseClient";
 
@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabaseClient";
 export default function Profil({ children }) {
   const router = useRouter();
   const [error, setError] = useState('');
+  const [visited, setVisited] = useState([])
+
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -18,6 +20,23 @@ export default function Profil({ children }) {
       router.replace('/login');
     }
   };
+
+  useEffect(() => {
+    const fetchVisitedPlaces = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('visited_places')
+        .select('visited_at, events(titre, adresse)') // récupère les infos liées
+        .eq('user_id', user.id)
+
+      if (error) console.error('Erreur :', error)
+      else setVisited(data)
+    }
+
+    fetchVisitedPlaces()
+  }, [])
 
   return (
     <div>
@@ -30,6 +49,19 @@ export default function Profil({ children }) {
       </button>
       {error && (
         <div className="text-red-600 text-sm mt-2">{error}</div>
+      )}
+      <h2 className="text-xl font-bold mb-4">Lieux visités</h2>
+      {visited.length === 0 ? (
+        <p>Aucun lieu visité pour le moment.</p>
+      ) : (
+        <ul className="space-y-2">
+          {visited.map((visit, index) => (
+            <li key={index} className="border rounded p-2">
+              <strong>{visit.events.titre}</strong><br />
+              Visité le : {new Date(visit.visited_at).toLocaleString()}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

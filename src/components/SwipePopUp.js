@@ -25,13 +25,14 @@ export default function SwipePopUp({ event, onClose }) {
           />
         )}
 
-        <h2 className="text-xl font-bold text-gray-900">{event.titre}</h2>
-        <p className="text-sm text-gray-700">{event.date_debut}</p>
+        <h2 className="text-3xl font-bold text-gray-900">{event.titre}</h2>
+        <p className="text-base text-gray-700">{event.date_debut}</p>
 
-        <p className="font-semibold text-gray-800">
-          {event.personnalite || 'Titre secondaire'}
+        <p className="text-xl font-semibold text-gray-800">
+          {/*personnalite ou titre secondaire*/}
+          {event.personnalite}
         </p>
-        <p className="text-sm text-gray-800 leading-relaxed">
+        <p className="text-base text-gray-800 leading-relaxed">
           {event.description}
         </p>
 

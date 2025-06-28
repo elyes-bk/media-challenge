@@ -35,7 +35,7 @@ function MapFocus({ focusedEvent, markerRefs }) {
 }
 
 
-export default function InteractiveMap({ events, proximityRadius = 100, focusedEvent }) {
+export default function InteractiveMap({ events, proximityRadius = 500, focusedEvent }) {
   const [userPosition, setUserPosition] = useState(null)
   const [notifiedEvents, setNotifiedEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -80,15 +80,41 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
   // Détection de proximité
   useEffect(() => {
     if (!userPosition || !events) return
+
+    const checkAndSaveVisit = async (event) => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      
+      const { data: existingVisit } = await supabase
+        .from('visited_places')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('event_id', event.id)
+        .single()
+
+      if (!existingVisit) {
+        await supabase.from('visited_places').insert({
+          user_id: user.id,
+          event_id: event.id,
+          visited_at: new Date(),
+        })
+
+      }
+      
+    }
+
     events.forEach(ev => {
       const dist = getDistanceFromLatLonInM(
         userPosition[0], userPosition[1],
         ev.latitude, ev.longitude
       )
+
       if (dist <= proximityRadius && !notifiedEvents.includes(ev.id)) {
         alert(`Vous êtes à moins de ${proximityRadius}m de "${ev.titre}" !`)
         setNotifiedEvents(arr => [...arr, ev.id])
+        checkAndSaveVisit(ev)
       }
+
     })
   }, [userPosition, events, proximityRadius, notifiedEvents])
 
@@ -122,17 +148,10 @@ export default function InteractiveMap({ events, proximityRadius = 100, focusedE
             eventHandlers={{
               click: () => setSelectedEvent(ev)
             }}
-          >
-          {/*
-            <Popup>
-              <strong>{ev.titre}</strong><br />
-              {ev.description}
-            </Popup>
-          */}
-          
+          >          
             <Circle
               center={[ev.latitude, ev.longitude]}
-              radius={proximityRadius}
+              radius={500} //proximityRadius mais ne fonctionne pas donc j'ai mit une valeur en dur
               pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
             />
           </Marker>
