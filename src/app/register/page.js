@@ -19,6 +19,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+
   const router = useRouter()
 
   // Empêche l'accès si déjà connecté
@@ -71,6 +72,8 @@ export default function Register() {
       setSurnom('')
       setEmail('')
       setPassword('')
+      router.replace('/login') // Redirige UNIQUEMENT si la connexion a réussi
+  
 
       // Insertion dans la table users si l'utilisateur existe
       if (data?.user) {

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/navigation'
+import { getSessionAndRedirect } from '../../lib/auth.js'
 
 export default function Login() {
   const [email, setEmail] = useState('')

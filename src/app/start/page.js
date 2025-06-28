@@ -1,11 +1,12 @@
 'use client'
 import Image from 'next/image'
-import { useEffect } from 'react'
+import { useEffect,useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const [isConnected,setIsConnected] = useState(false)
 
   useEffect(() => {
     const checkSession = async () => {
