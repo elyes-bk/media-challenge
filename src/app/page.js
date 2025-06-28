@@ -12,23 +12,25 @@ export default function Home({ children }) {
     if (error) {
       setError("Erreur lors de la déconnexion : " + error.message);
     } else {
-      // Optionnel : rediriger vers la page de login ou d'accueil
       router.replace('/login');
     }
   };
 
   return (
-    <div>
-      <h1>hello</h1>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5ecdc] dark:bg-[#23221f] transition-colors duration-300">
+      <h1 className="text-3xl font-bold text-[#23221f] dark:text-white mb-8">
+        hello
+      </h1>
       <button
         onClick={handleLogout}
-        className="mt-4 bg-[#d33] text-white font-semibold py-2 px-4 rounded shadow hover:bg-[#b22] transition"
+        className="mt-4 bg-[#d33] dark:bg-[#a22] text-white font-semibold py-2 px-4 rounded shadow hover:bg-[#b22] dark:hover:bg-[#d33] transition"
       >
         Se déconnecter
       </button>
       {error && (
-        <div className="text-red-600 text-sm mt-2">{error}</div>
+        <div className="text-red-600 dark:text-red-400 text-sm mt-2">{error}</div>
       )}
+      {children}
     </div>
   );
 }
