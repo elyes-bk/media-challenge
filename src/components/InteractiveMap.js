@@ -96,7 +96,6 @@ export default function InteractiveMap({ events, proximityRadius = 500, focusedE
 
 
         if (dist <= proximityRadius && !notifiedEvents.includes(ev.id)) {
-          alert(`Vous êtes à moins de ${proximityRadius}m de "${ev.titre}" !`)
           setNotifiedEvents(arr => [...arr, ev.id])
 
           const { data: existingVisit } = await supabase
