@@ -14,42 +14,60 @@ export default function Login() {
   const router = useRouter()
 
   useEffect(() => {
-    getSessionAndRedirect(router, "/profil").then(setIsConnected)
-  }, [])
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        setIsConnected(true)
+        router.replace('/')  // pour rediriger si déjà connecté
+      } else {
+        setIsConnected(false)
+      }
+    }
+    checkSession()
+  }, [router])
 
-const handleLogin = async (e) => {
-  e.preventDefault()
-  setLoading(true)
-  setError('')
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  })
-  setLoading(false)
-  if (error) {
-    setError(error.message)
-  } else {
-    setIsConnected(true)
-    router.replace('/profil') // Redirige UNIQUEMENT si la connexion a réussi
+  const handleLogin = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+    setLoading(false)
+    if (error) {
+      setError(error.message)
+    } else {
+      setIsConnected(true)
+      router.replace('/') // Redirige UNIQUEMENT si la connexion a réussi
+    }
   }
-}
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      setError("Erreur déconnexion : " + error.message)
+    } else {
+      setIsConnected(false)
+      setEmail('')
+      setPassword('')
+    }
+  }
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-[#f5ecdc] px-4 py-6 relative">
+    <div className="min-h-screen flex flex-col items-center bg-[#f5ecdc] dark:bg-[#23221f] px-4 py-6 relative transition-colors duration-300">
       {/* Header icons */}
       <div className="absolute top-4 left-4">
         <button
           aria-label="Retour"
           onClick={() => router.back()}
-          className="text-[#23221f] text-2xl"
+          className="text-[#23221f] dark:text-white text-2xl"
         >
           ←
         </button>
       </div>
       <div className="absolute top-4 right-4">
-        <button aria-label="Mode clair/sombre" className="text-[#23221f] text-xl">
-          ☀️
-        </button>
+        {/* Le bouton de thème global est déjà dans le layout */}
       </div>
 
       {/* Logo */}
@@ -64,7 +82,7 @@ const handleLogin = async (e) => {
       </div>
 
       {/* Titre */}
-      <h1 className="text-2xl font-bold text-center mb-6 text-[#23221f]">
+      <h1 className="text-2xl font-bold text-center mb-6 text-[#23221f] dark:text-white">
         Connexion à votre compte
       </h1>
 
@@ -75,7 +93,7 @@ const handleLogin = async (e) => {
         autoComplete="off"
       >
         <div className="flex flex-col gap-1">
-          <label htmlFor="email" className="text-sm font-medium text-[#23221f]">
+          <label htmlFor="email" className="text-sm font-medium text-[#23221f] dark:text-white">
             Mail
           </label>
           <input
@@ -85,11 +103,11 @@ const handleLogin = async (e) => {
             value={email}
             required
             onChange={e => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-[#23221f] placeholder-[#bdbdbd] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-[#444] rounded-lg bg-white dark:bg-[#23221f] text-[#23221f] dark:text-white placeholder-[#bdbdbd] dark:placeholder-[#aaa] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
           />
         </div>
         <div className="flex flex-col gap-1">
-          <label htmlFor="password" className="text-sm font-medium text-[#23221f]">
+          <label htmlFor="password" className="text-sm font-medium text-[#23221f] dark:text-white">
             Mot de passe
           </label>
           <input
@@ -99,23 +117,32 @@ const handleLogin = async (e) => {
             value={password}
             required
             onChange={e => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-[#23221f] placeholder-[#bdbdbd] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-[#444] rounded-lg bg-white dark:bg-[#23221f] text-[#23221f] dark:text-white placeholder-[#bdbdbd] dark:placeholder-[#aaa] font-medium focus:outline-none focus:ring-2 focus:ring-[#179a9c]"
           />
         </div>
         {error && (
-          <div className="text-red-600 text-sm">{error}</div>
+          <div className="text-red-600 dark:text-red-400 text-sm">{error}</div>
         )}
         <button
           type="submit"
           disabled={loading}
-          className={`w-full mt-2 bg-[#179a9c] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`w-full mt-2 bg-[#179a9c] dark:bg-[#12787a] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#12787a] dark:hover:bg-[#179a9c] ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
           {loading ? 'Connexion...' : 'Se connecter'}
         </button>
+        {isConnected && (
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="w-full mt-2 bg-[#d33] dark:bg-[#a22] text-white font-semibold py-3 rounded-lg text-base shadow transition hover:bg-[#b22] dark:hover:bg-[#d33]"
+          >
+            Se déconnecter
+          </button>
+        )}
       </form>
 
       {/* Mentions légales */}
-      <p className="text-xs text-[#6e6a65] text-center max-w-xs mt-6">
+      <p className="text-xs text-[#6e6a65] dark:text-[#bbb] text-center max-w-xs mt-6">
         En vous connectant, vous acceptez nos conditions générales d’utilisation et notre politique de confidentialité.
       </p>
     </div>

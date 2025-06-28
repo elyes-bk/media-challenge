@@ -1,40 +1,3 @@
-// 'use client'
-
-// import { useState } from "react";
-// import { useRouter } from 'next/navigation';
-// import { supabase } from "@/lib/supabaseClient";
-
-
-// export default function Profil({ children }) {
-//   const router = useRouter();
-//   const [error, setError] = useState('');
-
-//   const handleLogout = async () => {
-//     const { error } = await supabase.auth.signOut();
-//     if (error) {
-//       setError("Erreur lors de la déconnexion : " + error.message);
-//     } else {
-//       // Optionnel : rediriger vers la page de login ou d'accueil
-//       router.replace('/login');
-//     }
-//   };
-
-//   return (
-//     <div>
-//       <h1>hello</h1>
-//       <button
-//         onClick={handleLogout}
-//         className="mt-4 bg-[#d33] text-white font-semibold py-2 px-4 rounded shadow hover:bg-[#b22] transition"
-//       >
-//         Se déconnecter
-//       </button>
-//       {error && (
-//         <div className="text-red-600 text-sm mt-2">{error}</div>
-//       )}
-//     </div>
-//   );
-// }
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -44,13 +7,30 @@ import { MdWbSunny, MdPlayArrow } from 'react-icons/md'
 import { BiSolidEdit } from 'react-icons/bi'  
 import UploadAvatar from '../../components/UploadAvatar'
 
-
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [videos, setVideos] = useState([])
-  const [sunActive, setSunActive] = useState(false)
   const router = useRouter()
+
+  // Gestion du thème (bascule dark/clair)
+  const [isDark, setIsDark] = useState(false)
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains('dark'))
+  }, [])
+
+  const toggleTheme = () => {
+    const html = document.documentElement
+    if (html.classList.contains('dark')) {
+      html.classList.remove('dark')
+      setIsDark(false)
+      localStorage.setItem('theme', 'false')
+    } else {
+      html.classList.add('dark')
+      setIsDark(true)
+      localStorage.setItem('theme', 'true')
+    }
+  }
 
   const handleAvatarUpload = (newAvatarUrl) => {
     setUser(prev => ({ ...prev, avatar_url: newAvatarUrl }))
@@ -100,113 +80,70 @@ export default function Dashboard() {
     fetchVideos()
   }, [user])
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}>Chargement...</div>
+  if (loading) return <div className="text-center mt-12">Chargement...</div>
 
   return (
-    <div style={{ backgroundColor: '#f6f0e6', color: '#1B1811', minHeight: '100vh', padding: '20px' }}>
-      {/* Mode clair/obscur */}
-      <div
-        onClick={() => setSunActive(!sunActive)}
-        style={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          cursor: 'pointer',
-          color: sunActive ? '#000' : 'transparent',
-          WebkitTextStroke: sunActive ? 'none' : '1.5px black',
-          textStroke: sunActive ? 'none' : '1.5px black',
-        }}
+    <div className="bg-[#f6f0e6] dark:bg-[#23221f] text-[#1B1811] dark:text-white min-h-screen p-5 transition-colors duration-300 relative">
+      {/* Bouton mode sombre/clair */}
+      <button
+        onClick={toggleTheme}
+        className="absolute top-5 right-5 p-2 rounded-full bg-white dark:bg-[#23221f] border shadow hover:bg-gray-100 dark:hover:bg-[#444] transition"
         title="Basculer mode"
       >
-        <MdWbSunny size={24} />
-      </div>
+        <MdWbSunny size={24} className={isDark ? "text-yellow-400" : "text-gray-700"} />
+      </button>
 
       {/* Profil */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 24 }}>
-        <div style={{ position: 'relative', marginRight: 16 }}>
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: '50%',
-              backgroundColor: '#ccc',
-              position: 'relative',
-            }}
-          >
+      <div className="flex items-center mb-6">
+        <div className="relative mr-4">
+          <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-[#444] relative overflow-hidden">
             {user.avatar_url ? (
               <img
                 src={user.avatar_url}
                 alt="Avatar"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                className="w-full h-full object-cover rounded-full"
               />
             ) : (
-              <div style={{ width: '100%', height: '100%' }} />
+              <div className="w-full h-full" />
             )}
-
-            {/* Label cliquable pour upload avec stylo + carré incomplet */}
+            {/* Label cliquable pour upload */}
             <label
               htmlFor="avatarUpload"
               title="Modifier l'avatar"
-              style={{
-                position: 'absolute',
-                top: 0,          
-                right: 0,
-                width: 28,
-                height: 28,
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 4,
-                boxSizing: 'border-box',
-                zIndex: 2,
-              }}
-            
+              className="absolute top-0 right-0 w-7 h-7 flex items-center justify-center rounded bg-white dark:bg-[#23221f] border shadow cursor-pointer"
+              style={{ zIndex: 2 }}
             >
-              <BiSolidEdit size={30} color="#1B1811" />
+              <BiSolidEdit size={22} className="text-[#1B1811] dark:text-white" />
             </label>
-
-            {/* UploadAvatar input file invisible */}
             <UploadAvatar userId={user.id} onUpload={handleAvatarUpload} />
           </div>
         </div>
-
         <div>
-          <div style={{ fontSize: 16, fontWeight: 'bold' }}>{user.surnom || 'Pseudo'}</div>
-          <div style={{ fontSize: 14 }}>{`${user.nom || 'Nom'} ${user.prenom || 'Prénom'}`}</div>
+          <div className="text-base font-bold">{user.surnom || 'Pseudo'}</div>
+          <div className="text-sm">{`${user.nom || 'Nom'} ${user.prenom || 'Prénom'}`}</div>
         </div>
       </div>
 
       {/* Historique vidéos */}
       <div>
         {videos.length === 0 ? (
-          <div style={{ textAlign: 'center', marginTop: 60 }}>
-            <div
-              style={{
-                width: 60,
-                height: 60,
-                border: '1px solid #000',
-                borderRadius: '50%',
-                margin: '0 auto 6px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transform: 'translateY(-4px)',
-              }}
-            >
+          <div className="text-center mt-16">
+            <div className="w-15 h-15 border border-[#1B1811] dark:border-white rounded-full mx-auto mb-2 flex items-center justify-center">
               <MdPlayArrow size={28} />
             </div>
-            <p style={{ fontSize: 14 }}>Aucun historique</p>
+            <p className="text-sm">Aucun historique</p>
           </div>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul className="list-none p-0">
             {videos.map((video) => (
-              <li key={video.id} style={{ marginBottom: 24 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>{video.titre}</h3>
+              <li key={video.id} className="mb-6">
+                <h3 className="text-base font-bold mb-2">{video.titre}</h3>
                 <video
                   src={video.url_importee}
                   controls
-                  style={{ width: '100%', borderRadius: 12, marginBottom: 8 }}
+                  className="w-full rounded-xl mb-2"
                 />
-                <p style={{ fontSize: 14 }}>{video.description}</p>
+                <p className="text-sm">{video.description}</p>
               </li>
             ))}
           </ul>

@@ -87,7 +87,7 @@ export default function UserTable() {
           value={form.email}
           onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
           required
-          className="border border-gray-300 rounded-md px-4 py-2"
+          className="border border-gray-300 rounded-md px-4 py-2 text-gray-800"
         />
         <input
           type="text"
@@ -95,7 +95,7 @@ export default function UserTable() {
           value={form.surnom}
           onChange={e => setForm(f => ({ ...f, surnom: e.target.value }))}
           required
-          className="border border-gray-300 rounded-md px-4 py-2"
+          className="border border-gray-300 rounded-md px-4 py-2 text-gray-800"
         />
         <input
           type="password"
@@ -103,12 +103,12 @@ export default function UserTable() {
           value={form.password}
           onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           required
-          className="border border-gray-300 rounded-md px-4 py-2"
+          className="border border-gray-300 rounded-md px-4 py-2 text-gray-800"
         />
         <select
           value={form.theme}
           onChange={e => setForm(f => ({ ...f, theme: e.target.value === "true" }))}
-          className="border border-gray-300 rounded-md px-4 py-2"
+          className="border border-gray-300 rounded-md px-4 py-2 text-gray-800"
         >
           <option value={false}>Thème clair</option>
           <option value={true}>Thème sombre</option>
@@ -116,7 +116,7 @@ export default function UserTable() {
         <select
           value={form.role}
           onChange={e => setForm(f => ({ ...f, role: e.target.value === "true" }))}
-          className="border border-gray-300 rounded-md px-4 py-2"
+          className="border border-gray-300 rounded-md px-4 py-2 text-gray-800"
         >
           <option value={false}>Utilisateur</option>
           <option value={true}>Admin</option>
