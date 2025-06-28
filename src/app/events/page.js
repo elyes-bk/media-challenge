@@ -52,7 +52,6 @@ export default function EventsPage() {
       </div>*/}
       <InteractiveMap
         events={filteredEvents}
-        proximityRadius={200}
         focusedEvent={focusedEvent}
       />
     </div>

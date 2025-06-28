@@ -3,6 +3,8 @@ import { useEffect, useState, useRef } from 'react'
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import SwipePopUp from './SwipePopUp'
+import { supabase } from "@/lib/supabaseClient";
+
 
 // Formule de Haversine pour calculer la distance entre deux points GPS en mètres
 function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
@@ -39,8 +41,7 @@ export default function InteractiveMap({ events, proximityRadius = 500, focusedE
   const [userPosition, setUserPosition] = useState(null)
   const [notifiedEvents, setNotifiedEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [icons, setIcons] = useState({ customIcon: null, myPositionIcon: null })
-
+  const [icons, setIcons] = useState({ customIcon: null, myPositionIcon: null })  
 
   // Pour gérer les refs des markers
   const markerRefs = useRef({})
@@ -81,42 +82,44 @@ export default function InteractiveMap({ events, proximityRadius = 500, focusedE
   useEffect(() => {
     if (!userPosition || !events) return
 
-    const checkAndSaveVisit = async (event) => {
+    const checkProximity = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      
-      const { data: existingVisit } = await supabase
-        .from('visited_places')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('event_id', event.id)
-        .single()
 
-      if (!existingVisit) {
-        await supabase.from('visited_places').insert({
-          user_id: user.id,
-          event_id: event.id,
-          visited_at: new Date(),
-        })
+      for (const ev of events) {
+        const dist = getDistanceFromLatLonInM(
+          userPosition[0], userPosition[1],
+          ev.latitude, ev.longitude
+        )
 
+        console.log(`Événement "${ev.titre}" à ${dist.toFixed(2)}m`)
+
+
+        if (dist <= proximityRadius && !notifiedEvents.includes(ev.id)) {
+          alert(`Vous êtes à moins de ${proximityRadius}m de "${ev.titre}" !`)
+          setNotifiedEvents(arr => [...arr, ev.id])
+
+          const { data: existingVisit } = await supabase
+            .from('visited_places')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('event_id', ev.id)
+            .single()
+
+          if (!existingVisit) {
+            await supabase.from('visited_places').insert({
+              user_id: user.id,
+              event_id: ev.id,
+              visited_at: new Date(),
+            })
+          }
+        }
       }
-      
     }
 
-    events.forEach(ev => {
-      const dist = getDistanceFromLatLonInM(
-        userPosition[0], userPosition[1],
-        ev.latitude, ev.longitude
-      )
-
-      if (dist <= proximityRadius && !notifiedEvents.includes(ev.id)) {
-        alert(`Vous êtes à moins de ${proximityRadius}m de "${ev.titre}" !`)
-        setNotifiedEvents(arr => [...arr, ev.id])
-        checkAndSaveVisit(ev)
-      }
-
-    })
+    checkProximity()
   }, [userPosition, events, proximityRadius, notifiedEvents])
+
 
   if (!icons.customIcon || !icons.myPositionIcon) {
     return null // ou un loader si tu veux
@@ -151,7 +154,7 @@ export default function InteractiveMap({ events, proximityRadius = 500, focusedE
           >          
             <Circle
               center={[ev.latitude, ev.longitude]}
-              radius={500} //proximityRadius mais ne fonctionne pas donc j'ai mit une valeur en dur
+              radius={proximityRadius} 
               pathOptions={{ color: 'blue', fillColor: 'blue', fillOpacity: 0.1 }}
             />
           </Marker>
