@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/navigation'
-import { MdWbSunny, MdPlayArrow } from 'react-icons/md'
+import { MdPlayArrow } from 'react-icons/md'
 import { BiSolidEdit } from 'react-icons/bi'  
 import UploadAvatar from '../../components/UploadAvatar'
 
@@ -13,24 +13,7 @@ export default function Dashboard() {
   const [videos, setVideos] = useState([])
   const router = useRouter()
 
-  // Gestion du thème (bascule dark/clair)
-  const [isDark, setIsDark] = useState(false)
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'))
-  }, [])
-
-  const toggleTheme = () => {
-    const html = document.documentElement
-    if (html.classList.contains('dark')) {
-      html.classList.remove('dark')
-      setIsDark(false)
-      localStorage.setItem('theme', 'false')
-    } else {
-      html.classList.add('dark')
-      setIsDark(true)
-      localStorage.setItem('theme', 'true')
-    }
-  }
+ 
 
   const handleAvatarUpload = (newAvatarUrl) => {
     setUser(prev => ({ ...prev, avatar_url: newAvatarUrl }))
@@ -85,13 +68,7 @@ export default function Dashboard() {
   return (
     <div className="bg-[#f6f0e6] dark:bg-[#23221f] text-[#1B1811] dark:text-white min-h-screen p-5 transition-colors duration-300 relative">
       {/* Bouton mode sombre/clair */}
-      <button
-        onClick={toggleTheme}
-        className="absolute top-5 right-5 p-2 rounded-full bg-white dark:bg-[#23221f] border shadow hover:bg-gray-100 dark:hover:bg-[#444] transition"
-        title="Basculer mode"
-      >
-        <MdWbSunny size={24} className={isDark ? "text-yellow-400" : "text-gray-700"} />
-      </button>
+      
 
       {/* Profil */}
       <div className="flex items-center mb-6">
