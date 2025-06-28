@@ -33,33 +33,29 @@ export default function ListEvent() {
       <div className="mb-6">
         <h2 className="text-md font-semibold text-[#23221f] dark:text-white mb-4">Événements</h2>
         <ul className="space-y-4">
-          {filteredEvents.slice(0, 2).map(ev => (
-            <li key={ev.id} className="flex justify-between items-start">
-              <div className="flex-1 pr-4">
+          {filteredEvents
+            .sort((a,b) => new Date(b.created_at) - new Date(a.created_at))
+            .map(ev => (
+           <li key={ev.id} className="flex items-center gap-4">
+              {/* Texte à gauche */}
+              <div className="flex-1">
                 <p className="font-bold text-[#23221f] dark:text-white text-sm">{ev.titre}</p>
                 <p className="text-xs text-[#23221f] dark:text-[#bbb]">{ev.description}</p>
               </div>
-              <div className="w-12 h-12 bg-[#179a9c] dark:bg-[#12787a] rounded-md shrink-0"></div>
-            </li>
-          ))}
-        </ul>
-      </div>
 
-      {/* Section Vidéos (même contenu ici en démo) */}
-      <div>
-        <h2 className="text-md font-semibold text-[#23221f] dark:text-white mb-4">Vidéos</h2>
-        <ul className="space-y-4">
-          {filteredEvents.slice(2).map(ev => (
-            <li key={ev.id} className="flex justify-between items-start">
-              <div className="flex-1 pr-4">
-                <p className="font-bold text-[#23221f] dark:text-white text-sm">{ev.titre}</p>
-                <p className="text-xs text-[#23221f] dark:text-[#bbb]">{ev.description}</p>
+              {/* Image à droite */}
+              <div className="w-1/2 flex justify-center">
+                <img
+                  src={ev.image_url}
+                  alt="Illustration"
+                  className="object-cover rounded-lg h-30"
+                />
               </div>
-              <div className="w-12 h-12 bg-[#179a9c] dark:bg-[#12787a] rounded-md shrink-0"></div>
             </li>
+
           ))}
         </ul>
-      </div>
+      </div>  
     </div>
   )
 }

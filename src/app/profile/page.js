@@ -6,14 +6,26 @@ import { useRouter } from 'next/navigation'
 import { MdPlayArrow } from 'react-icons/md'
 import { BiSolidEdit } from 'react-icons/bi'  
 import UploadAvatar from '../../components/UploadAvatar'
+import logo from '../../../public/icon/Logo.png'
 
 export default function Dashboard() {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [videos, setVideos] = useState([])
   const router = useRouter()
+  const [error, setError] = useState('');
+  const [visited, setVisited] = useState([])
 
- 
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setError("Erreur lors de la déconnexion : " + error.message);
+    } else {
+      // Optionnel : rediriger vers la page de login ou d'accueil
+      router.replace('/login');
+    }
+  };
 
   const handleAvatarUpload = (newAvatarUrl) => {
     setUser(prev => ({ ...prev, avatar_url: newAvatarUrl }))
@@ -43,6 +55,24 @@ export default function Dashboard() {
     fetchUser()
   }, [router])
 
+  //recuperation des lieux visité
+  useEffect(() => {
+    const fetchVisitedPlaces = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data, error } = await supabase
+        .from('visited_places')
+        .select('visited_at, events(titre, adresse)') // récupère les infos liées
+        .eq('user_id', user.id)
+
+      if (error) console.error('Erreur :', error)
+      else setVisited(data)
+    }
+
+    fetchVisitedPlaces()
+  }, [])
+
   useEffect(() => {
     if (!user) return
 
@@ -66,66 +96,68 @@ export default function Dashboard() {
   if (loading) return <div className="text-center mt-12">Chargement...</div>
 
   return (
-    <div className="bg-[#f6f0e6] dark:bg-[#23221f] text-[#1B1811] dark:text-white min-h-screen p-5 transition-colors duration-300 relative">
-      {/* Bouton mode sombre/clair */}
-      
-
-      {/* Profil */}
-      <div className="flex items-center mb-6">
-        <div className="relative mr-4">
-          <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-[#444] relative overflow-hidden">
-            {user.avatar_url ? (
-              <img
-                src={user.avatar_url}
-                alt="Avatar"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <div className="w-full h-full" />
-            )}
-            {/* Label cliquable pour upload */}
-            <label
-              htmlFor="avatarUpload"
-              title="Modifier l'avatar"
-              className="absolute top-0 right-0 w-7 h-7 flex items-center justify-center rounded bg-white dark:bg-[#23221f] border shadow cursor-pointer"
-              style={{ zIndex: 2 }}
-            >
-              <BiSolidEdit size={22} className="text-[#1B1811] dark:text-white" />
-            </label>
-            <UploadAvatar userId={user.id} onUpload={handleAvatarUpload} />
-          </div>
-        </div>
-        <div>
-          <div className="text-base font-bold">{user.surnom || 'Pseudo'}</div>
-          <div className="text-sm">{`${user.nom || 'Nom'} ${user.prenom || 'Prénom'}`}</div>
+  <div className="bg-[#f6f0e6] dark:bg-[#23221f] text-[#1B1811] dark:text-white min-h-screen p-5 transition-colors duration-300 relative">
+    
+    {/* Profil utilisateur */}
+    <div className="flex items-center mb-6">
+      <div className="relative mr-4">
+        <div className="w-20 h-20 rounded-full bg-gray-300 dark:bg-[#444] overflow-hidden">
+          {user.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt="Avatar"
+              className="w-full h-full object-cover rounded-full"
+            />
+          ) : (
+            <div className="w-full h-full" />
+          )}
         </div>
       </div>
-
-      {/* Historique vidéos */}
       <div>
-        {videos.length === 0 ? (
-          <div className="text-center mt-16">
-            <div className="w-15 h-15 border border-[#1B1811] dark:border-white rounded-full mx-auto mb-2 flex items-center justify-center">
-              <MdPlayArrow size={28} />
-            </div>
-            <p className="text-sm">Aucun historique</p>
-          </div>
-        ) : (
-          <ul className="list-none p-0">
-            {videos.map((video) => (
-              <li key={video.id} className="mb-6">
-                <h3 className="text-base font-bold mb-2">{video.titre}</h3>
-                <video
-                  src={video.url_importee}
-                  controls
-                  className="w-full rounded-xl mb-2"
-                />
-                <p className="text-sm">{video.description}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <div className="text-base font-bold">{user.surnom || 'Pseudo'}</div>
+        <div className="text-sm text-gray-700 dark:text-gray-300">{user.email}</div>
+        <span className="inline-block mt-1 px-2 py-1 text-xs bg-[#e8dfd3] text-[#1B1811] rounded">
+          Marcheur de mémoire
+        </span>
       </div>
     </div>
-  )
-}
+
+    {/* Bouton déconnexion */}
+    <button
+      onClick={handleLogout}
+      className="mb-6 bg-[#d33] text-white font-semibold py-2 px-4 rounded shadow hover:bg-[#b22] transition"
+    >
+      Se déconnecter
+    </button>
+
+    {/* Lieux débloqués */}
+    <div className="mb-8">
+      <h2 className="text-lg font-bold mb-2">Lieux débloqués</h2>
+      
+      {visited.length === 0 ? (
+        <p>Aucun lieu visité pour le moment.</p>
+      ) : (
+        <ul className="space-y-2">
+          {visited.map((visit, index) => (
+            <li key={index} className="flex items-center border rounded p-3 bg-white dark:bg-[#2c2b28]">
+              {/* Logo */}
+              <img
+                src={logo}
+                alt="Logo lieu"
+                className="w-6 h-6 mr-3"
+              />
+
+              {/* Infos du lieu */}
+              <div>
+                <strong>{visit.events.titre}</strong><br />
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  Débloqué le : {new Date(visit.visited_at).toLocaleDateString()}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </div>
+)}
