@@ -15,6 +15,8 @@ export default function Dashboard() {
   const router = useRouter()
   const [error, setError] = useState('');
   const [visited, setVisited] = useState([])
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
 
 
   const handleLogout = async () => {
@@ -54,6 +56,58 @@ export default function Dashboard() {
 
     fetchUser()
   }, [router])
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      const {
+        data: { user: sessionUser }
+      } = await supabase.auth.getUser();
+
+      if (!sessionUser) return;
+
+      const { data, error } = await supabase
+        .from('subscribers')
+        .select('id')
+        .eq('user_id', sessionUser.id)
+        .single();
+
+      if (!error && data) {
+        setIsSubscribed(true);
+      } else {
+        setIsSubscribed(false);
+      }
+    };
+
+    fetchSubscription();
+  }, []);
+
+  const handleToggleSubscription = async () => {
+    const {
+      data: { user: sessionUser }
+    } = await supabase.auth.getUser();
+
+    if (!sessionUser) return;
+
+    if (isSubscribed) {
+      // Supprimer l'abonnement
+      await supabase
+        .from('subscribers')
+        .delete()
+        .eq('user_id', sessionUser.id);
+      setIsSubscribed(false);
+    } else {
+      // Ajouter l'abonnement
+      await supabase
+        .from('subscribers')
+        .insert({
+          email: sessionUser.email,
+          user_id: sessionUser.id
+        });
+      setIsSubscribed(true);
+    }
+  };
+
+
 
   //recuperation des lieux visité
   useEffect(() => {
@@ -119,6 +173,18 @@ export default function Dashboard() {
         <span className="inline-block mt-1 px-2 py-1 text-xs bg-[#e8dfd3] text-[#1B1811] rounded">
           Marcheur de mémoire
         </span>
+        <div className="mb-6">
+          <label className="flex items-center gap-2 text-sm text-[#1B1811] dark:text-white">
+            <input
+              type="checkbox"
+              checked={isSubscribed}
+              onChange={handleToggleSubscription}
+              className="w-4 h-4"
+            />
+            Recevoir la newsletter
+          </label>
+        </div>
+
       </div>
     </div>
 

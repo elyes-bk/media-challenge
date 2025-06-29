@@ -24,7 +24,7 @@ export default function Nav() {
     { href: '/events', icon: map },
     { href: '/videos', icon: tv },
     { href: '/listEvent', icon: bell },
-    { href: redirectConnected ? '/profile' : '/login', icon: user },
+    { href: redirectConnected ? '/profile' : '/', icon: user },
   ]
 
   return (

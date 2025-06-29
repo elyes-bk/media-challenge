@@ -19,6 +19,7 @@ export default function Register() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [subscribeNewsletter, setSubscribeNewsletter] = useState(false)
 
   const router = useRouter()
 
@@ -65,6 +66,8 @@ export default function Register() {
       }
     })
 
+    
+
     if (signUpError) {
       setError(signUpError.message)
     } else {
@@ -74,6 +77,16 @@ export default function Register() {
       setPassword('')
       router.replace('/login') // Redirige UNIQUEMENT si la connexion a réussi
   
+      if(subscribeNewsletter){
+        const { error: newsletterError } = await supabase
+        .from('subscribers')
+        .insert({
+          email: email,
+        });
+        if (newsletterError) {
+          console.error('Erreur newsletter:', newsletterError);
+        }
+      }
 
       // Insertion dans la table users si l'utilisateur existe
       if (data?.user) {
@@ -182,7 +195,15 @@ export default function Register() {
         {message && (
           <div className="text-green-600 text-sm">{message}</div>
         )}
-
+        <label className="flex items-center gap-2 text-sm text-[#23221f]">
+          <input
+            type="checkbox"
+            checked={subscribeNewsletter}
+            onChange={(e) => setSubscribeNewsletter(e.target.checked)}
+            className="w-4 h-4"
+          />
+          Je souhaite recevoir la newsletter
+        </label>
         <button
           type="submit"
           disabled={loading}
@@ -190,6 +211,7 @@ export default function Register() {
         >
           {loading ? 'Inscription...' : "Créer un compte"}
         </button>
+        
       </form>
 
       {/* Mentions légales */}

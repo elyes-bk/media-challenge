@@ -103,7 +103,7 @@ export default function InteractiveMap({ events, proximityRadius = 500, focusedE
             .select('id')
             .eq('user_id', user.id)
             .eq('event_id', ev.id)
-            .single()
+            .maybeSingle()
 
           if (!existingVisit) {
             await supabase.from('visited_places').insert({
